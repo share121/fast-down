@@ -223,10 +223,10 @@ pub async fn download(mut args: DownloadArgs) -> Result<()> {
         client,
         info.final_url.clone(),
         download_chunks,
+        info.file_size,
         &save_path,
         DownloadOptions {
             concurrent,
-            file_size: info.file_size,
             retry_gap: args.retry_gap,
             write_buffer_size: args.write_buffer_size,
             write_channel_size: args.write_channel_size,
@@ -268,8 +268,8 @@ pub async fn download(mut args: DownloadArgs) -> Result<()> {
     let start = Instant::now();
     while let Ok(e) = result.event_chain.recv().await {
         match e {
-            Event::DownloadProgress(p) => painter.lock().await.add(p),
-            Event::WriteProgress(p) => {
+            Event::DownloadProgress(_, p) => painter.lock().await.add(p),
+            Event::WriteProgress(_, p) => {
                 write_progress.merge_progress(p);
                 if last_db_update.elapsed().as_secs() >= 1 {
                     last_db_update = Instant::now();
